@@ -1,27 +1,57 @@
+import webapp2
 from caesar import encrypt
 
-#!/usr/bin/env python
-#
-# Copyright 2007 Google Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-import webapp2
+page_header = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Caesar</title>
+</head>
+<body>
+"""
+
+page_footer = """
+</body>
+</html>
+"""
 
 class MainHandler(webapp2.RequestHandler):
     def get(self):
-        self.response.write('Hello world!')
+        rotate_form = """
+        <center><form action="/rotate" method="post">
+            <label>
+                Rotate by:
+                <input type="number" name="rotate-by" value="0"/>
+            </label><br><br>
+            <textarea name="text-to-rotate" style="height: 100px; width: 400px;"></textarea><br>
+            <input type="submit"/>
+        </form></center>
+        """
+
+        response = page_header + rotate_form + page_footer
+        self.response.write(response)
+
+class Rotate(webapp2.RequestHandler):
+    def post(self):
+        text_to_rotate = self.request.get("text-to-rotate")
+        rotate_by = self.request.get("rotate-by")
+        rotated_text = encrypt(text_to_rotate, int(rotate_by))
+
+        ans_form = """
+        <center><form action="/rotate" method="post">
+            <label>
+                Rotate by:
+                <input type="number" name="rotate-by" value="0"/>
+            </label><br><br>
+            <textarea name="text-to-rotate" style="height: 100px; width: 400px;">{0!s}</textarea><br>
+            <input type="submit"/>
+        </form></center>
+        """.format(rotated_text)
+
+        response = page_header + ans_form + page_footer
+        self.response.write(response)
 
 app = webapp2.WSGIApplication([
-    ('/', MainHandler)
+    ('/', MainHandler),
+    ('/rotate', Rotate)
 ], debug=True)
